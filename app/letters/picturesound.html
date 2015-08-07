@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!-- saved from url=(0038)http://2048v2.droppages.com/index.txt? -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="apple-touch-icon" href="http://2048v2.droppages.com/bottleinapan.jpg">
+<link rel="apple-touch-icon" sizes="76x76" href="http://2048v2.droppages.com/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="http://2048v2.droppages.com/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="http://2048v2.droppages.com/touch-icon-ipad-retina.png">
+<link rel="apple-touch-startup-image" href="http://2048v2.droppages.com/bottleinapan.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="viewport" content="initial-scale=.8, user-scalable=no">
+		<title>2048</title>
+		<style type="text/css">
+		#log{
+			color: #fff;
+		}
+		body{
+			background-color: #999;
+		}
+		.r-button{
+			background-image: url(image/speaker_x064.png);
+			background-repeat: no-repeat;
+			background-position: 50% 50%;
+			width: 96px;
+			height: 96px;
+			border-radius: 48px;
+			background-color: #121200;
+		}
+		div.renderarea div div{
+		display: inline-block;
+			font-weight: bold;
+			border-collapse: collapse;
+			border:4px solid #aaa;
+			border-radius: 12px;
+			/*background-color: #000;
+			color: #00FF00;*/
+			
+			font-family: Helvetica,sans-serif;
+			min-width:56px;
+			min-height:48px;
+			
+		}
+		</style>
+		<script type="text/javascript">
+			function cj() {
+				make={}
+				var egen="a,b,br,body,button,canvas,div,form,h1,h2,h3,h4,html,head,i,input,iframe,img,label,legend,link,li,meta,noscript,object,ol,optgroup,option,p,param,pre,q,script,select,small,span,style,sub,sup,table,tbody,thead,tfoot,tr,td,th,title,textarea,u,ul,audio,video,track,source".split(',');
+					for (var i = 0; i < egen.length; i++) {
+						var _tag=egen[i];
+						make[_tag]=(function(__tag){return function (a,b,c) {
+							return setparam(__tag,a,b,c)
+						}
+						})(_tag)
+					}
+				
+				var setparam=function setparam(tag,a,s,c) {
+					var e=document.createElement(tag||"div")
+					if(a)
+					for (var at in a) {
+						try {
+							e[at]= a[at];
+						}catch (e) {
+							
+						}
+					}
+					if(s)
+					for (st in s) {
+						try {
+							e.style[st]=s[st];
+						}catch (e) {
+							
+						}
+					}
+					if(c)
+					for (var i = 0; i < c.length; i++) {
+						try {
+							e.appendChild(c[i]);
+						}catch (e) {
+							
+						}
+					}
+					return e;
+				}
+			}
+			cj()
+		</script>
+		
+		<script>
+/* @class-prototype Application
+*/
+Application=(function Application_closure(){
+	var EMPTY=0;
+	var P=function P(x,y) {
+		this.x=x;
+		this.y=y;
+		this.t=new Date().getTime();
+		this.diff=function diff(p) {
+			this.x-=p.x;
+			this.y-=p.y;
+			this.t-=p.t;
+			return this;
+		}
+		this.getDir=function dir() {
+			var x=Math.abs(this.x);
+			var y=Math.abs(this.y);
+			var t=Math.abs(this.t);
+			return (t<50)?"":(x>y)?
+				((this.x<0)?"R":"L"):
+				((this.y<0)?"B":"T")
+		}
+		this.lengthSquared=function(){
+			return this.x*this.x+this.y*this.y;
+		}
+		this.length=function(){
+			return Math.sqrt(this.lengthSquared());
+		}
+		this.speed=function(){
+			return this.length()/this.t;
+		}
+	}
+	var Iterator=function Iterator(init){
+		var q=init||[];
+		var index=0;
+		var _next=function next() {
+			if( (index+1)<q.length )index++;
+			return this;//return q[index]||null;
+		}
+		var _prev=function prev() {
+			if( (index-1)>=0 )index--;
+			return this;//return q[index]||null;
+		}
+		var _get=function(){
+			return q[index]||null;
+		}
+		this.next=_next;
+		this.prev=_prev;
+		this.get=_get;
+	}
+	/* constructor-prototype
+	* @name:Application
+	*/
+	var PROTO=function Application(){
+		var THIS=this;
+		if(typeof(localStorage)=="undefined"){
+			localStorage={}
+		}
+		THIS.data=new Iterator([
+			{text:"letterA",sound:"sound/koala.mp3",image:"image/letterA.png",video:"video/Sesame Street Letter A.mp4"},
+			{text:"letterB",sound:"sound/koala.mp3",image:"image/letterB.png",video:"video/Sesame Street Letter B.mp4"},
+			{text:"letterC",sound:"sound/koala.mp3",image:"image/letterC.png",video:"video/Sesame Street Letter C.mp4"}
+		]/*or get object from httprequest*/)
+
+		var ui,reset,undo,redo,level;
+		ui=make.div({id:"browzer"},{width:document.documentElement.clientWidth+"px",height:document.documentElement.clientHeight+"px"},[
+
+		])
+
+		THIS.render=function(){
+			var item=THIS.data.get();
+			var audio,video;
+			var view=make.div({},{},[
+				make.h1({innerHTML:item.text}),
+				audio=make.audio({src:item.sound,onended:function(){
+					video.style.display="";
+					video.play();
+				}}),
+				make.div({className:"r-button",onclick:function(){
+					audio.play()
+				}},{}),
+				video=make.video({},{
+					display:"none"
+				},[
+					make.source({src:item.video,type:"video/mp4"})
+				])
+			])
+			try{
+				ui.removeChild(ui.children[0])
+			}catch(err){}
+			ui.appendChild(view);
+			ui.style.backgroundImage='url('+item.image+')'
+		}
+		document.getElementById("content").appendChild(ui)
+
+		var p;
+		var ts=function(e) {
+				try{p=new P(
+					e.changedTouches[0].pageX,
+					e.changedTouches[0].pageY
+				);
+				}catch (error) {
+					p=new P(
+						e.clientX,
+						e.clientY
+					);
+				}
+			}
+			,tm=function(e) {
+				e.preventDefault();
+			}
+			,te=function(e) {
+				//e.preventDefault();
+				var np
+				try{np=new P(
+					e.changedTouches[0].pageX,
+					e.changedTouches[0].pageY
+				);
+				}catch (error) {
+					np=new P(
+						e.clientX,
+						e.clientY
+					);
+				}
+				p.diff(np);
+				if(p.length()<40)return;
+
+				switch(p.getDir()){
+					case "L":
+						THIS.data.prev();
+					break;
+					case "R":
+						THIS.data.next();
+					break;
+					case "T":
+
+					break;
+					case "B":
+
+					break;
+				}
+				THIS.render();
+			}
+
+		document.addEventListener(
+			'touchstart', ts, false
+		);
+		document.addEventListener(
+			'touchmove', tm, false
+			);
+		document.addEventListener(
+			'touchend', te, false
+			);
+		document.addEventListener(
+			'mousedown', ts, false
+		);
+		document.addEventListener(
+			'mousemove', tm, false
+			);
+		document.addEventListener(
+			'mouseup', te, false
+			);
+		THIS.render();
+	}
+	return PROTO;
+})();
+		</script>
+		<script type="text/javascript" id="bootstrap">
+			log=function log(p) {
+				//return;
+				document
+					.getElementById("log")
+					.innerHTML=p;
+			}
+			setTimeout(function name() {
+					try{app = new Application();}catch (error) {
+					console.log(error);
+				}
+			}, 200) 
+		</script>
+	</head>
+	<body onload="">
+	<div id="content">
+		
+	</div>
+	<div id="log">
+		
+	</div>
+</body></html>
